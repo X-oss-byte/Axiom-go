@@ -26,15 +26,15 @@ type IntegrationTestFunc func(ctx context.Context, dataset string, client *axiom
 // IntegrationTest tests the given adapter with the given test function. It
 // takes care of setting up all surroundings for the integration test.
 func IntegrationTest(t *testing.T, adapterName string, testFunc IntegrationTestFunc) {
+	if adapterName == "" {
+		t.Fatal("adapter integration test needs the name of the adapter")
+	}
+
 	cfg := config.Default()
 	if err := cfg.IncorporateEnvironment(); err != nil {
 		t.Fatal(err)
 	} else if err = cfg.Validate(); err != nil {
 		t.Fatal(err)
-	}
-
-	if adapterName == "" {
-		t.Fatal("adapter integration test needs the name of the adapter")
 	}
 
 	datasetSuffix := os.Getenv("AXIOM_DATASET_SUFFIX")
@@ -85,8 +85,6 @@ func IntegrationTest(t *testing.T, adapterName string, testFunc IntegrationTestF
 
 	// Run the test function with the test client.
 	testFunc(ctx, dataset.ID, client)
-
-	// time.Sleep(time.Second * 30)
 
 	// Make sure the dataset is not empty.
 	res, err := client.Datasets.QueryLegacy(ctx, dataset.ID, querylegacy.Query{

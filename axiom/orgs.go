@@ -188,6 +188,17 @@ func (l *License) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// SigningKeys are the signing keys used to sign shared access tokens that
+// can be used by a third party to run queries on behalf of the organization.
+// They can be rotated.
+type SigningKeys struct {
+	// Primary signing key. Gets rotated to the secondary signing key after
+	// rotation.
+	Primary string `json:"primary"`
+	// Secondary signing key. Gets rotated out.
+	Secondary string `json:"secondary"`
+}
+
 // Organization represents an organization.
 type Organization struct {
 	// ID is the unique ID of the organization.
@@ -220,7 +231,7 @@ type Organization struct {
 }
 
 type wrappedOrganization struct {
-	Organization
+	*Organization
 
 	// HINT(lukasmalkmus): Ignore these fields because they do not provide any
 	// value to the user.
@@ -247,7 +258,7 @@ func (s *OrganizationsService) List(ctx context.Context) ([]*Organization, error
 
 	organizations := make([]*Organization, len(res))
 	for i, r := range res {
-		organizations[i] = &r.Organization
+		organizations[i] = r.Organization
 	}
 
 	return organizations, nil
@@ -256,7 +267,7 @@ func (s *OrganizationsService) List(ctx context.Context) ([]*Organization, error
 // Get an organization by id.
 func (s *OrganizationsService) Get(ctx context.Context, id string) (*Organization, error) {
 	ctx, span := s.client.trace(ctx, "Organizations.Get", trace.WithAttributes(
-		attribute.String("axiom.dataset_id", id),
+		attribute.String("axiom.organization_id", id),
 	))
 	defer span.End()
 
@@ -270,5 +281,5 @@ func (s *OrganizationsService) Get(ctx context.Context, id string) (*Organizatio
 		return nil, spanError(span, err)
 	}
 
-	return &res.Organization, nil
+	return res.Organization, nil
 }
