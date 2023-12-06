@@ -44,7 +44,7 @@ jobs:
       AXIOM_DATASET_SUFFIX: ${{ github.run_id }}-${{ matrix.go }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
       - run: make test-integration
